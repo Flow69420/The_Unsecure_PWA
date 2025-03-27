@@ -2,13 +2,39 @@ import sqlite3 as sql
 import time
 import random
 import html
+import re
 
+def is_password_complex(password):
+    """
+    Check if the password meets complexity requirements:
+    - At least 8 characters long
+    - Contains at least one uppercase letter
+    - Contains at least one lowercase letter
+    - Contains at least one digit
+    - Contains at least one special character
+    """
+    if len(password) < 8:
+        return False
+    if not re.search(r"[A-Z]", password):
+        return False
+    if not re.search(r"[a-z]", password):
+        return False
+    if not re.search(r"[0-9]", password):
+        return False
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        return False
+    return True
 
 def insertUser(username, password, DoB):
+    # Enforce password complexity requirements before inserting the user
+    if not is_password_complex(password):
+        raise ValueError("Password does not meet complexity requirements. "
+                         "It must be at least 8 characters long and include uppercase, lowercase, digit, and special character.")
+    
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
     cur.execute(
-        "INSERT INTO users (username,password,dateOfBirth) VALUES (?,?,?)",
+        "INSERT INTO users (username, password, dateOfBirth) VALUES (?,?,?)",
         (username, password, DoB),
     )
     con.commit()
